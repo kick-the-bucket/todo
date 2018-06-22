@@ -7,16 +7,49 @@
 
 require('./bootstrap');
 
-window.Vue = require('vue');
+$(function () {
+    let list = () =>  {
+        axios.get(route('api.todo.index')).then((response) => {
+            let $list = $('#list tbody');
+            $list.children('tr').remove();
+            $(response.data).each((key, item) =>  {
+                $list.append(
+                    $('<tr>')
+                        .append($('<td>').text(item.task))
+                        .append($('<td>').text(item.created_at))
+                        .append($('<td>').addClass('text-right').append(
+                            $('<button>').addClass('btn btn-danger').text('Delete')).click(function () {
+                                remove(item.id);
+                            })
+                        )
+                );
+            });
+        });
+    };
 
-/**
- * Next, we will create a fresh Vue application instance and attach it to
- * the page. Then, you may begin adding components to this application
- * or customize the JavaScript scaffolding to fit your unique needs.
- */
+    let remove = (id) => {
+        axios.delete(route('api.todo.destroy', id)).then(list);
+    };
 
-Vue.component('example-component', require('./components/ExampleComponent.vue'));
+    let $form = $('#add');
+    $form.submit(event => {
+        event.preventDefault();
+        axios.post(route('api.todo.store'), $form.serialize())
+            .then(() => {
+                $form.find('[name="task"]').val('').removeClass('is-invalid');
+                list();
+            })
+            .catch(error => {
+                // error = eval(JSON.stringify(error));
+                let errors = error.response.data.errors;
+                console.log(errors);
+                for (name in errors) {
+                    console.log('${name}: ${error.errors[name]}');
+                    $('input[name="'+name+'"]').addClass('is-invalid').siblings('.invalid-feedback').text(errors[name][0]);
+                }
+            })
+        ;
+    });
 
-const app = new Vue({
-    el: '#app'
+    list();
 });
