@@ -11,6 +11,13 @@
 |
 */
 
+use Illuminate\Support\Facades\Route;
+
 Route::get('/', function () {
-    return view('welcome');
+    return redirect(route('todo.index'));
+});
+
+Route::group([], function() {
+    Route::resource('todo', 'TodoController', ['as' => ''])
+        ->only('index', 'store', 'destroy');
 });
