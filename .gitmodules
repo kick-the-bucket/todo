@@ -1,0 +1,3 @@
+[submodule "laradoc"]
+	path = laradock
+	url = git@github.com:kick-the-bucket/laradock.git
